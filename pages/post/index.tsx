@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../layout/layout.dashboard";
 import { PlusCircleIcon } from "@heroicons/react/solid";
 import { TagIcon } from "@heroicons/react/solid";
 import { XCircleIcon } from "@heroicons/react/solid";
+import Router from "next/router";
 
 function Index() {
+  //Tags Input
   const [tags, setTags] = useState<any>([]);
 
   function classNames(...classes: any) {
@@ -60,8 +62,7 @@ function Index() {
     );
   };
 
-  const handle_save_job_description = (
-  ) => {
+  const handle_save_job_description = () => {
     set_input_description_values([
       ...input_description_values,
       ...input_description_fields,
@@ -73,10 +74,10 @@ function Index() {
   //Description Input
 
   const [input_requirement_fields, set_input_requirement_fields] = useState([
-    "",
+    ""
   ]);
   const [input_requirement_values, set_input_requirement_values] = useState<
-    string[]
+    String[]
   >([]);
 
   const handle_add_input_job_requirement = (
@@ -92,7 +93,7 @@ function Index() {
   ) => {
     e.preventDefault();
     const values = [...input_requirement_fields];
-    values[index] = e.target.value;
+    values[index] = e.target.value
     set_input_requirement_fields(values);
   };
 
@@ -102,13 +103,18 @@ function Index() {
     );
   };
 
-  const handle_save_job_requirement = (
-  ) => {
-    set_input_requirement_values([
-      ...input_requirement_values,
-      ...input_requirement_fields,
-    ]);
-  };
+
+  function sendData(e: React.ChangeEvent<HTMLInputElement>) {
+    e.preventDefault();
+    Router.push({
+      pathname: "/post/preview",
+      query: {
+        input: input_requirement_fields
+      },
+    });
+  }
+
+  console.log(input_requirement_fields)
 
 
   return (
@@ -439,6 +445,7 @@ function Index() {
 
             <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
               <button
+                onClick={(e: any) => sendData(e)}
                 type="submit"
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
