@@ -7,7 +7,7 @@ import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { fetcher } from "../../utils/fetcher/fetcher";
 import Router from "next/router";
 
-function Index() {
+function Index({user}:any) {
   const [products, setProducts] = useState<any>();
   useEffect(() => {
     const fetch_product = async () => {
@@ -15,7 +15,6 @@ function Index() {
         "http://localhost:3000/product/employer/product",
         { withCredentials: true }
       );
-      console.log(product.data);
       setProducts(product.data);
     };
     fetch_product();
@@ -33,6 +32,7 @@ function Index() {
     const buy: any = await axios.post(
       "http://localhost:3000/payment/employer/checkout",
       {
+        employer_profile_id: user.employer_profile.id,
         product_name: product_name,
         product_id: product_id,
         product_api: product_api,

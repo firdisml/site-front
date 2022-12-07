@@ -12,10 +12,10 @@ const user = {
 };
 const navigation = [
   { name: "Home", href: "#", current: true },
-  { name: "Profile", href: "#", current: false },
+  { name: "Post", href: "/post", current: false },
   { name: "Reload", href: "/reload", current: false },
   { name: "Verification", href: "/verification", current: false },
-  { name: "Openings", href: "#", current: false },
+  { name: "Transaction", href: "/transaction", current: false },
 ];
 const userNavigation = [
   { name: "Your Profile", href: "#" },
