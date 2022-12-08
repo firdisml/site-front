@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import DashboardLayout from "../../layout/layout.dashboard";
 import { PlusCircleIcon } from "@heroicons/react/solid";
 import { TagIcon } from "@heroicons/react/solid";
@@ -7,13 +7,13 @@ import Router from "next/router";
 
 function Index() {
   //Tags Input
+  
   const [tags, setTags] = useState<any>([]);
 
   function classNames(...classes: any) {
     return classes.filter(Boolean).join(" ");
   }
 
-  //Tags Input
   function handle_tag_input_change(event: any) {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -28,16 +28,15 @@ function Index() {
     e.preventDefault();
     setTags(tags.filter((_: any, tag: any) => tag !== tagToDelete));
   }
+
   //Tags Input
+
 
   //Description Input
 
   const [input_description_fields, set_input_description_fields] = useState([
     "",
   ]);
-  const [input_description_values, set_input_description_values] = useState<
-    string[]
-  >([]);
 
   const handle_add_input_job_description = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -62,23 +61,13 @@ function Index() {
     );
   };
 
-  const handle_save_job_description = () => {
-    set_input_description_values([
-      ...input_description_values,
-      ...input_description_fields,
-    ]);
-  };
-
   //Description Input
 
-  //Description Input
+  //Requirement Input
 
   const [input_requirement_fields, set_input_requirement_fields] = useState([
     ""
   ]);
-  const [input_requirement_values, set_input_requirement_values] = useState<
-    String[]
-  >([]);
 
   const handle_add_input_job_requirement = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -103,19 +92,55 @@ function Index() {
     );
   };
 
+  //Requirement Input
+
+
+  //Skill Set Input
+
+  const [input_skill_set_fields, set_input_skill_set_fields] = useState([
+    ""
+  ]);
+
+  const handle_add_input_job_skill_set = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    e.preventDefault();
+    set_input_skill_set_fields([...input_skill_set_fields, ""]);
+  };
+
+  const handle_job_skill_set_input_change = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    e.preventDefault();
+    const values = [...input_skill_set_fields];
+    values[index] = e.target.value
+    set_input_skill_set_fields(values);
+  };
+
+  const handle_delete_job_skill_set_input = (index: number) => {
+    set_input_skill_set_fields(
+      input_skill_set_fields.filter((_, i) => i !== index)
+    );
+  };
+
+  //Skill Set Input
+
+
+
+
 
   function sendData(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault();
     Router.push({
       pathname: "/post/preview",
       query: {
-        input: input_requirement_fields
+        description: input_description_fields,
+        requirement: input_requirement_fields,
+        skill: input_skill_set_fields,
       },
     });
   }
-
-  console.log(input_requirement_fields)
-
 
   return (
     <DashboardLayout>
@@ -327,6 +352,65 @@ function Index() {
                     className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                   />
                 </div>
+
+                <div className="bg-slate-100 overflow-hidden shadow rounded-lg col-span-6">
+                  <div className="px-4 py-5 sm:p-6">
+                    <div className="col-span-6">
+                      {input_skill_set_fields.map((field, index) => (
+                        <div key={index} className="mb-3">
+                          <div className="relative rounded-md shadow-sm items-center">
+                            <input
+                              type="text"
+                              name="street-address"
+                              id="street-address"
+                              value={field}
+                              onChange={(e) =>
+                                handle_job_skill_set_input_change(e, index)
+                              }
+                              autoComplete="street-address"
+                              className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            />
+                            {index === 0 ? null : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handle_delete_job_skill_set_input(index)
+                                }
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center px-2 text-sm leading-5 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:shadow-outline-blue focus:text-gray-700"
+                              >
+                                <svg
+                                  className="h-5 w-5"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        onClick={(e: any) =>
+                          handle_add_input_job_skill_set(e)
+                        }
+                        type="button"
+                        className="relative w-full rounded-md px-3 py-2 text-sm leading-5 font-medium text-center text-gray-700 hover:text-gray-900 focus:outline-none focus:shadow-outline-blue focus:text-gray-900"
+                      >
+                        <PlusCircleIcon
+                          className="h-7 w-7 text-gray-400 hover:text-gray-800 mx-auto"
+                          aria-hidden="true"
+                        />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
 
                 <div className="bg-slate-100 overflow-hidden shadow rounded-lg col-span-6">
                   <div className="px-4 py-5 sm:p-6">
