@@ -4,10 +4,14 @@ import { PlusCircleIcon } from "@heroicons/react/solid";
 import { TagIcon } from "@heroicons/react/solid";
 import { XCircleIcon } from "@heroicons/react/solid";
 import Router from "next/router";
+import { FormikProps } from "formik/dist/types";
+import { basicSchema } from "../../schemas";
+import { useFormik, Formik, Field, Form, FieldArray } from "formik";
+import { PersistFormikValues } from "formik-persist-values";
 
 function Index() {
   //Tags Input
-  
+
   const [tags, setTags] = useState<any>([]);
 
   function classNames(...classes: any) {
@@ -30,7 +34,6 @@ function Index() {
   }
 
   //Tags Input
-
 
   //Description Input
 
@@ -66,7 +69,7 @@ function Index() {
   //Requirement Input
 
   const [input_requirement_fields, set_input_requirement_fields] = useState([
-    ""
+    "",
   ]);
 
   const handle_add_input_job_requirement = (
@@ -82,7 +85,7 @@ function Index() {
   ) => {
     e.preventDefault();
     const values = [...input_requirement_fields];
-    values[index] = e.target.value
+    values[index] = e.target.value;
     set_input_requirement_fields(values);
   };
 
@@ -94,12 +97,9 @@ function Index() {
 
   //Requirement Input
 
-
   //Skill Set Input
 
-  const [input_skill_set_fields, set_input_skill_set_fields] = useState([
-    ""
-  ]);
+  const [input_skill_set_fields, set_input_skill_set_fields] = useState([""]);
 
   const handle_add_input_job_skill_set = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -114,8 +114,8 @@ function Index() {
   ) => {
     e.preventDefault();
     const values = [...input_skill_set_fields];
-    values[index] = e.target.value
-    set_input_skill_set_fields(values);
+    values[index] = e.target.value;
+    return set_input_skill_set_fields(values);
   };
 
   const handle_delete_job_skill_set_input = (index: number) => {
@@ -125,11 +125,6 @@ function Index() {
   };
 
   //Skill Set Input
-
-
-
-
-
   function sendData(e: React.ChangeEvent<HTMLInputElement>) {
     e.preventDefault();
     Router.push({
@@ -145,6 +140,102 @@ function Index() {
   return (
     <DashboardLayout>
       <div className="mt-5 md:mt-0 md:col-span-2">
+        <Formik
+          onSubmit={() => {
+            console.log("Submitted!");
+          }}
+          initialValues={{
+            job_title: "",
+            friends: [""],
+          }}
+        >
+          {(props) => (
+            <Form onSubmit={props.handleSubmit}>
+              <label
+                htmlFor="street-address"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Job Title
+              </label>
+              <input
+                type="text"
+                name="job_title"
+                id="job_title"
+                autoComplete="job_title"
+                value={props.values.job_title}
+                onChange={props.handleChange}
+                required
+                className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              />
+
+              <FieldArray
+                name="friends"
+                render={(arrayHelpers) => (
+                  <div>
+                    {props.values.friends && props.values.friends.length > 0 ? (
+                      props.values.friends.map((friend, index) => (
+                        <div
+                          className="relative rounded-md shadow-sm items-center"
+                          key={index}
+                        >
+                          <Field
+                            type="text"
+                            className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            name={`friends.${index}`}
+                          />
+                          {index === 0 ? null : (<button
+                            type="button"
+                            onClick={() => arrayHelpers.remove(index)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center px-2 text-sm leading-5 font-medium text-gray-500 hover:text-gray-700 focus:outline-none focus:shadow-outline-blue focus:text-gray-700"
+                          >
+                            <svg
+                              className="h-5 w-5"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            Delete
+                          </button>)}
+                        </div>
+                      ))
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => arrayHelpers.push("")}
+                      >
+                        {/* show this when user has removed all friends from the list */}
+                        Add a friend
+                      </button>
+                    )}
+                    <button
+                      onClick={() => arrayHelpers.push("")}
+                      type="button"
+                      className="relative w-full rounded-md px-3 py-2 text-sm leading-5 font-medium text-center text-gray-700 hover:text-gray-900 focus:outline-none focus:shadow-outline-blue focus:text-gray-900"
+                    >
+                      <PlusCircleIcon
+                        className="h-7 w-7 text-gray-400 hover:text-gray-800 mx-auto"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </div>
+                )}
+              />
+
+              <button
+                type="submit"
+                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Preview
+              </button>
+              <PersistFormikValues name="post_form" />
+            </Form>
+          )}
+        </Formik>
         <form action="#" method="POST">
           <div className="shadow overflow-hidden sm:rounded-md">
             <div className="px-4 py-5 bg-white sm:p-6">
@@ -158,9 +249,10 @@ function Index() {
                   </label>
                   <input
                     type="text"
-                    name="street-address"
-                    id="street-address"
-                    autoComplete="street-address"
+                    name="job_title"
+                    id="job_title"
+                    autoComplete="job_title"
+                    required
                     className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                   />
                 </div>
@@ -396,9 +488,7 @@ function Index() {
                         </div>
                       ))}
                       <button
-                        onClick={(e: any) =>
-                          handle_add_input_job_skill_set(e)
-                        }
+                        onClick={(e: any) => handle_add_input_job_skill_set(e)}
                         type="button"
                         className="relative w-full rounded-md px-3 py-2 text-sm leading-5 font-medium text-center text-gray-700 hover:text-gray-900 focus:outline-none focus:shadow-outline-blue focus:text-gray-900"
                       >
@@ -410,7 +500,6 @@ function Index() {
                     </div>
                   </div>
                 </div>
-
 
                 <div className="bg-slate-100 overflow-hidden shadow rounded-lg col-span-6">
                   <div className="px-4 py-5 sm:p-6">
@@ -529,7 +618,6 @@ function Index() {
 
             <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
               <button
-                onClick={(e: any) => sendData(e)}
                 type="submit"
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
