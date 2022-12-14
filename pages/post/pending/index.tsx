@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from "react";
-import DashboardLayout from "../../layout/layout.dashboard";
+import DashboardLayout from "../../../layout/layout.dashboard";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
-import { fetcher } from "../../utils/fetcher/fetcher";
+import { fetcher } from "../../../utils/fetcher/fetcher";
 import {
   CheckCircleIcon,
   ChevronRightIcon,
-  ChevronLeftIcon,
   MailIcon,
 } from "@heroicons/react/solid";
 import axios from "axios";
-import Skeleton from "./component/skeleton";
+import Skeleton from "../component/skeleton";
 import { useRouter } from "next/router";
 
-function Index({ user, page }: any) {
+
+function Index({ user }: any) {
+    const router = useRouter();
+
   const tabs = [
-    { name: "Active", href: "/post", current: true },
-    { name: "Pending", href: "/post/pending", current: false },
+    { name: "Active", href: "/post", current: false },
+    { name: "Pending", href: "/post/pending", current: true },
     { name: "Inactive", href: "/post/inactive", current: false },
   ];
 
@@ -25,15 +27,7 @@ function Index({ user, page }: any) {
 
   const [posts, set_posts] = useState<any>();
 
-  const [posts_count, set_posts_count] = useState<any>();
-
-  const start = page === 1 ? 0 : (page - 1) * 5;
-
-  const last = Math.ceil(posts_count / 5);
-
   const employer_profile_id = user.employer_profile.id;
-
-  const router = useRouter();
 
   useEffect(() => {
     const fetch_posts = async () => {
@@ -44,52 +38,31 @@ function Index({ user, page }: any) {
             employer_profile_id: employer_profile_id,
             post_visibility: false,
             post_pending: false,
-            skip_content: start,
-            take_content: 5,
           },
           {
             headers: { "Content-Type": "application/json" },
             withCredentials: true,
           }
         );
+
+        console.log(fetch_posts.data);
         set_posts(fetch_posts.data);
       } catch (error) {
         console.log(error);
       }
     };
-
-    const fetch_posts_count = async () => {
-      try {
-        const fetch_posts_count = await axios.post(
-          "http://localhost:3000/post/count",
-          {
-            employer_profile_id: employer_profile_id,
-            post_visibility: false,
-            post_pending: false,
-          },
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-        );
-        console.log(fetch_posts_count.data);
-        set_posts_count(fetch_posts_count.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
     fetch_posts();
-    fetch_posts_count();
-  }, [employer_profile_id, start]);
+  }, [employer_profile_id]);
 
-  function mobileTabs(e: any) {
-    e.preventDefault();
+  function mobileTabs(e:any){
+    e.preventDefault()
 
-    if (e.currentTarget.value === "Active") {
-      router.push("/post");
-    } else {
-      router.push(`/post/${e.currentTarget.value.toLowerCase()}`);
+    if(e.currentTarget.value === "Active")
+    {
+        router.push("/post")
+    }
+    else{
+        router.push(`/post/${e.currentTarget.value.toLowerCase()}`)
     }
   }
 
@@ -105,9 +78,7 @@ function Index({ user, page }: any) {
           <div className="ml-4 mt-2 flex-shrink-0">
             <button
               type="button"
-              onClick={(e) => {
-                router.push("/post/create");
-              }}
+              onClick={(e) => {router.push('/post/create')}}
               className="relative inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Create new job
@@ -123,10 +94,8 @@ function Index({ user, page }: any) {
           {/* Use an "onChange" listener to redirect the user to the selected tab URL. */}
           <select
             id="tabs"
+            onChange={(e) => {mobileTabs(e)}}
             name="tabs"
-            onChange={(e) => {
-              mobileTabs(e);
-            }}
             className="block w-full focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 "
             defaultValue={tabs.find((tab) => tab.current).name}
           >
@@ -164,6 +133,7 @@ function Index({ user, page }: any) {
             ))}
           </nav>
         </div>
+        
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul role="list" className="divide-y divide-gray-200">
             {posts ? (
@@ -235,30 +205,23 @@ function Index({ user, page }: any) {
           <div className="hidden sm:block">
             <p className="text-sm text-gray-700">
               Showing <span className="font-medium">1</span> to{" "}
-              <span className="font-medium">{posts_count < 5 ? posts_count : 5}</span> of{" "}
-              <span className="font-medium">{posts_count}</span> results
+              <span className="font-medium">10</span> of{" "}
+              <span className="font-medium">20</span> results
             </p>
           </div>
-
           <div className="flex-1 flex justify-between sm:justify-end">
-            <button
-              type="button"
-              onClick={() => router.push(`post?page=${page - 1}`)}
-              disabled={page <= 1}
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+            <a
+              href="#"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
-              <span className="sr-only">Previous</span>
-              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push(`post?page=${page + 1}`)}
-              disabled={page >= last}
-              className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              Previous
+            </a>
+            <a
+              href="#"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
-              <span className="sr-only">Next</span>
-              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
+              Next
+            </a>
           </div>
         </nav>
       </div>
@@ -271,11 +234,7 @@ export default Index;
 export const getServerSideProps: GetServerSideProps = async (
   ctx: GetServerSidePropsContext
 ) => {
-  const {
-    req,
-    res,
-    query: { page = 1 },
-  } = ctx;
+  const { req, res } = ctx;
   const [error, user] = await fetcher(
     req,
     res,
@@ -284,5 +243,5 @@ export const getServerSideProps: GetServerSideProps = async (
 
   if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
 
-  return { props: { user: user, page: +page } };
+  return { props: { user } };
 };

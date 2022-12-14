@@ -418,7 +418,7 @@ function Index({ user }: any) {
         <div>
           <a
             onClick={(e:any) => {submit_post(e)}}
-            className="block bg-gray-50 text-sm font-medium text-gray-500 text-center px-4 py-4 hover:text-gray-700 sm:rounded-b-lg"
+            className="cursor-pointer block bg-gray-50 text-sm font-medium text-gray-500 text-center px-4 py-4 hover:text-gray-700 sm:rounded-b-lg"
           >
             Submit
           </a>
