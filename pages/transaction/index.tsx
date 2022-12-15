@@ -5,6 +5,7 @@ import axios from "axios";
 import { fetcher } from "../../utils/fetcher/fetcher";
 import Skeleton from "./component/skeleton";
 import { useRouter } from "next/router";
+import { useQuery } from "react-query";
 
 /* This example requires Tailwind CSS v2.0+ */
 import {
@@ -14,49 +15,64 @@ import {
   MailIcon,
 } from "@heroicons/react/solid";
 
+const fetch_transactions = async (
+  employer_profile_id: string,
+  start: number
+) => {
+  if (employer_profile_id === null) {
+    return [];
+  } else {
+    const fetch_transactions = await axios.post(
+      "http://localhost:3000/transaction/employer/transaction",
+      {
+        employer_profile_id: employer_profile_id,
+        skip_content: start,
+        take_content: 5,
+      },
+      { withCredentials: true }
+    );
+
+    return fetch_transactions.data;
+  }
+};
+
+const fetch_transactions_count = async (employer_profile_id: string) => {
+  const fetch_transactions_count = await axios.post(
+    "http://localhost:3000/transaction/employer/transaction/count",
+    { employer_profile_id: employer_profile_id },
+    { withCredentials: true }
+  );
+
+  return fetch_transactions_count.data;
+};
+
 function Index({ user, page }: any) {
   const router = useRouter();
-  const [transactions, set_transactions] = useState<any>();
-  const [transactions_count, set_transactions_count] = useState<any>();
-  const employer_profile_id = user.employer_profile.id;
+
+  const employer_profile_id = user.employer_profile
+    ? user.employer_profile.id
+    : null;
+
   const start = page === 1 ? 0 : (page - 1) * 5;
-  const last = Math.ceil(transactions_count / 5);
 
-  useEffect(() => {
-    const fetch_transactions = async () => {
-      const fetch = await axios.post(
-        "http://localhost:3000/transaction/employer/transaction",
-        {
-          employer_profile_id: employer_profile_id,
-          skip_content: start,
-          take_content: 5,
-        },
-        { withCredentials: true }
-      );
-      console.log(fetch.data);
-      set_transactions(fetch.data);
-    };
+  const transactions = useQuery(
+    ["transactions", employer_profile_id, start],
+    () => fetch_transactions(employer_profile_id, start)
+  );
 
-    const fetch_transactions_count = async () => {
-      const count = await axios.post(
-        "http://localhost:3000/transaction/employer/transaction/count",
-        { employer_profile_id: employer_profile_id },
-        { withCredentials: true }
-      );
-      console.log(count.data);
-      set_transactions_count(count.data);
-    };
+  const transactions_count = useQuery(
+    ["transactions_count", employer_profile_id, start],
+    () => fetch_transactions_count(employer_profile_id)
+  );
 
-    fetch_transactions();
-    fetch_transactions_count();
-  }, [employer_profile_id, start]);
+  const last = Math.ceil(transactions_count.data / 5);
 
   return (
-    <DashboardLayout>
+    <DashboardLayout user={user}>
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-200">
-          {transactions && transactions_count ? (
-            transactions.map((transaction: any) => (
+          {transactions.data && transactions_count.data ? (
+            transactions.data.map((transaction: any) => (
               <li key={transaction.id}>
                 <a
                   href={`/transaction/details/${transaction.session_id}`}
@@ -112,45 +128,50 @@ function Index({ user, page }: any) {
                 </a>
               </li>
             ))
+          ) : transactions && !transactions_count ? (
+            <a>Nothing Here</a>
           ) : (
             <Skeleton />
           )}
         </ul>
-        <nav
-          className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-          aria-label="Pagination"
-        >
-          <div className="hidden sm:block">
-            <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">1</span> to{" "}
-              <span className="font-medium">
-                {transactions_count < 5 ? transactions_count : 5}
-              </span>{" "}
-              of <span className="font-medium">{transactions_count}</span>{" "}
-              results
-            </p>
-          </div>
-          <div className="flex-1 flex justify-between sm:justify-end">
-            <button
-              type="button"
-              onClick={() => router.push(`transaction?page=${page - 1}`)}
-              disabled={page <= 1}
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <span className="sr-only">Previous</span>
-              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push(`transaction?page=${page + 1}`)}
-              disabled={page >= last}
-              className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <span className="sr-only">Next</span>
-              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-        </nav>
+        {transactions && transactions_count ? (
+          <nav
+            className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+            aria-label="Pagination"
+          >
+            <div className="hidden sm:block">
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">1</span> to{" "}
+                <span className="font-medium">
+                  {transactions_count.data < 5 ? transactions_count.data : 5}
+                </span>{" "}
+                of{" "}
+                <span className="font-medium">{transactions_count.data}</span>{" "}
+                results
+              </p>
+            </div>
+            <div className="flex-1 flex justify-between sm:justify-end">
+              <button
+                type="button"
+                onClick={() => router.push(`transaction?page=${page - 1}`)}
+                disabled={page <= 1}
+                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <span className="sr-only">Previous</span>
+                <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push(`transaction?page=${page + 1}`)}
+                disabled={page >= last}
+                className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <span className="sr-only">Next</span>
+                <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+          </nav>
+        ) : null}
       </div>
     </DashboardLayout>
   );
@@ -172,7 +193,13 @@ export const getServerSideProps: GetServerSideProps = async (
     "http://localhost:3000/user/fetch"
   );
 
-  if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
+  const user_profile: any = user;
+
+  if (!user_profile)
+    return { redirect: { statusCode: 307, destination: "/signin" } };
+
+  if (!user_profile.employer_profile)
+    return { redirect: { statusCode: 307, destination: "/verification" } };
 
   return { props: { user: user, page: +page } };
 };

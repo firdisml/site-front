@@ -7,7 +7,7 @@ import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { fetcher } from "../../../utils/fetcher/fetcher";
 import Skeleton from "../component/skeleton";
 
-function DynamicTransaction() {
+function DynamicTransaction({user}:any) {
     const [transaction, setTransaction] = useState<any>()
   const router = useRouter();
   const param = router.query.id;
@@ -24,7 +24,7 @@ function DynamicTransaction() {
     fetch_unique_employer_transaction();
   }, [param]);
   return (
-    <DashboardLayout>
+    <DashboardLayout user = {user}>
       <>
        {transaction ? (<>
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -145,17 +145,24 @@ function DynamicTransaction() {
 export default DynamicTransaction;
 
 export const getServerSideProps: GetServerSideProps = async (
-    ctx: GetServerSidePropsContext
-  ) => {
-    const { req, res } = ctx;
-    const [error, user] = await fetcher(
-      req,
-      res,
-      "http://localhost:3000/user/fetch"
-    );
-  
-    if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
-  
-    return { props: { user } };
-  };
-  
+  ctx: GetServerSidePropsContext
+) => {
+  const {
+    req,
+    res,
+    query: { page = 1 },
+  } = ctx;
+  const [error, user] = await fetcher(
+    req,
+    res,
+    "http://localhost:3000/user/fetch"
+  );
+
+  const user_profile:any = user
+
+  if (!user_profile) return { redirect: { statusCode: 307, destination: "/signin" } };
+
+  if(!user_profile.employer_profile)return { redirect: { statusCode: 307, destination: "/verification" } };
+
+  return { props: { user: user, page: +page } };
+};

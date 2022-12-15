@@ -32,7 +32,7 @@ const plans = [
   },
 ];
 
-function Index() {
+function Index({user}:any) {
   function onKeyDown(keyEvent: any) {
     if ((keyEvent.charCode || keyEvent.keyCode) === 13) {
       keyEvent.preventDefault();
@@ -41,7 +41,7 @@ function Index() {
 
 
   return (
-    <DashboardLayout>
+    <DashboardLayout user = {user}>
       <div className="mt-5 md:mt-0 md:col-span-2">
         <Formik
           initialValues={{
@@ -564,7 +564,7 @@ function Index() {
                                   id={plan.name}
                                   name="job_post_package"
                                   value={plan.name}
-                                  class="hidden peer"
+                                  className="hidden peer"
                                   onClick={() => {
                                     props.setFieldValue("job_post_credit",plan.credit)
                                     props.setFieldValue("job_post_duration", plan.duration)
@@ -630,14 +630,22 @@ export default Index;
 export const getServerSideProps: GetServerSideProps = async (
   ctx: GetServerSidePropsContext
 ) => {
-  const { req, res } = ctx;
+  const {
+    req,
+    res,
+    query: { page = 1 },
+  } = ctx;
   const [error, user] = await fetcher(
     req,
     res,
     "http://localhost:3000/user/fetch"
   );
 
-  if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
+  const user_profile:any = user
 
-  return { props: { user } };
+  if (!user_profile) return { redirect: { statusCode: 307, destination: "/signin" } };
+
+  if(!user_profile.employer_profile)return { redirect: { statusCode: 307, destination: "/verification" } };
+
+  return { props: { user: user, page: +page } };
 };

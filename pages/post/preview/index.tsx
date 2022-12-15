@@ -128,7 +128,7 @@ function Index({ user }: any) {
 
 
   return (
-    <DashboardLayout>
+    <DashboardLayout user = {user}>
       <div className="bg-white shadow sm:rounded-lg">
         <div className="px-4 py-5 sm:px-6">
           <h2
@@ -433,14 +433,22 @@ export default Index;
 export const getServerSideProps: GetServerSideProps = async (
   ctx: GetServerSidePropsContext
 ) => {
-  const { req, res } = ctx;
+  const {
+    req,
+    res,
+    query: { page = 1 },
+  } = ctx;
   const [error, user] = await fetcher(
     req,
     res,
     "http://localhost:3000/user/fetch"
   );
 
-  if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
+  const user_profile:any = user
 
-  return { props: { user } };
+  if (!user_profile) return { redirect: { statusCode: 307, destination: "/signin" } };
+
+  if(!user_profile.employer_profile)return { redirect: { statusCode: 307, destination: "/verification" } };
+
+  return { props: { user: user, page: +page } };
 };

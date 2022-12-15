@@ -3,14 +3,16 @@ import { useRouter } from 'next/router'
 
 import React from 'react'
 import Link from "next/link";
+import { GetServerSidePropsContext, GetServerSideProps } from "next";
+import { fetcher } from "../../../utils/fetcher/fetcher";
 
-function Index() {
+function Index({user}:any) {
 
     const router = useRouter();
 
     console.log(router.query.id)
   return (
-    <DashboardLayout>
+    <DashboardLayout user = {user}>
                   <div className="min-h-full pt-16 pb-12 flex flex-col bg-white">
         <main className="flex-grow flex flex-col justify-center max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex-shrink-0 flex justify-center">
@@ -44,3 +46,26 @@ function Index() {
 }
 
 export default Index;
+
+export const getServerSideProps: GetServerSideProps = async (
+  ctx: GetServerSidePropsContext
+) => {
+  const {
+    req,
+    res,
+    query: { page = 1 },
+  } = ctx;
+  const [error, user] = await fetcher(
+    req,
+    res,
+    "http://localhost:3000/user/fetch"
+  );
+
+  const user_profile:any = user
+
+  if (!user_profile) return { redirect: { statusCode: 307, destination: "/signin" } };
+
+  if(!user_profile.employer_profile)return { redirect: { statusCode: 307, destination: "/verification" } };
+
+  return { props: { user: user, page: +page } };
+};

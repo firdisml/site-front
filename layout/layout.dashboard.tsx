@@ -1,8 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { Fragment } from "react";
 import { Menu, Popover, Transition } from "@headlessui/react";
-import { BellIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
+import {
+  BellIcon,
+  MenuIcon,
+  XIcon,
+  CreditCardIcon,
+  PlusCircleIcon,
+} from "@heroicons/react/outline";
 import { SearchIcon } from "@heroicons/react/solid";
+import { useRouter } from "next/router";
+import camelCase from "camelcase";
 
 const user = {
   name: "Tom Cook",
@@ -27,7 +35,15 @@ function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
-function DashboardLayout({...props}) {
+function DashboardLayout({ ...props }) {
+  const employer_profile_id = props.user.employer_profile
+    ? props.user.employer_profile.id
+    : null;
+
+  const router = useRouter();
+
+  const employer_profile = props.user.employer_profile;
+
   return (
     <>
       <div className="min-h-full">
@@ -142,19 +158,34 @@ function DashboardLayout({...props}) {
                   <div className="grid grid-cols-3 gap-8 items-center">
                     <div className="col-span-2">
                       <nav className="flex space-x-4">
-                        {navigation.map((item) => (
+                        {navigation && employer_profile_id ? (
+                          navigation.map((item) => (
+                            <a
+                              key={item.name}
+                              href={item.href}
+                              className={classNames(
+                                item.current ? "text-white" : "text-indigo-100",
+                                "text-sm font-medium rounded-md bg-white bg-opacity-0 px-3 py-2 hover:bg-opacity-10"
+                              )}
+                              aria-current={item.current ? "page" : undefined}
+                            >
+                              {item.name}
+                            </a>
+                          ))
+                        ) : (
                           <a
-                            key={item.name}
-                            href={item.href}
+                            href={navigation[3].href}
                             className={classNames(
-                              item.current ? "text-white" : "text-indigo-100",
+                              navigation[3] ? "text-white" : "text-indigo-100",
                               "text-sm font-medium rounded-md bg-white bg-opacity-0 px-3 py-2 hover:bg-opacity-10"
                             )}
-                            aria-current={item.current ? "page" : undefined}
+                            aria-current={
+                              navigation[3].current ? "page" : undefined
+                            }
                           >
-                            {item.name}
+                            {navigation[3].name}
                           </a>
-                        ))}
+                        )}
                       </nav>
                     </div>
                     <div>
@@ -331,15 +362,116 @@ function DashboardLayout({...props}) {
                 </section>
               </div>
 
-              {/* Right column */}
               <div className="grid grid-cols-1 gap-4">
                 <section aria-labelledby="section-2-title">
-                  <h2 className="sr-only" id="section-2-title">
-                    Section title
-                  </h2>
-                  <div className="rounded-lg bg-white overflow-hidden shadow">
-                    <div className="p-6">{/* Side Card */}</div>
-                  </div>
+                  {employer_profile ? (
+                    <div className="rounded-lg bg-white overflow-hidden shadow">
+                      <div className="">
+                        <div className=" h-32 overflow-hidden">
+                          <picture>
+                            <img
+                              className="object-cover object-top w-full"
+                              src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ"
+                              alt="Mountain"
+                            />
+                          </picture>
+                        </div>
+                        <div className="mx-auto w-32 h-32 relative -mt-16 border-4 border-white rounded-full overflow-hidden">
+                          <picture>
+                            <img
+                              className="object-cover object-center h-32"
+                              src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=400&fit=max&ixid=eyJhcHBfaWQiOjE0NTg5fQ"
+                              alt="Woman looking front"
+                            />
+                          </picture>
+                        </div>
+                        <div className="text-center mt-2">
+                          <span className="bg-green-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-green-700 dark:text-gray-300">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              className="w-5 h-5 mt-0.5 mr-0.5 "
+                            >
+                              <path
+                                stroke-linecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            Verified
+                          </span>
+                          <span className="bg-green-100 text-gray-800 text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded mr-2 dark:bg-green-700 dark:text-gray-300">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke-width="1.5"
+                              stroke="currentColor"
+                              className="w-5 h-5 mt-0.5 mr-0.5 pb-0.5"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                strokeLinejoin="round"
+                                d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
+                              />
+                            </svg>
+
+                            {camelCase(props.user.account_type, {
+                              pascalCase: true,
+                            })}
+                          </span>
+                          <h2 className="mt-4 font-bold text-lg">
+                            {props.user.employer_profile.employer_name}
+                          </h2>
+                          <p className="text-gray-500 text-sm">
+                            {props.user.email}
+                          </p>
+                        </div>
+                        <ul
+                          role="list"
+                          className="mt-0.5 p-5 mb-0.8 grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-1"
+                        >
+                          <li className="col-span-1 flex shadow-sm rounded-md">
+                            <div className="bg-indigo-600 flex-shrink-0 flex items-center justify-center w-16 text-white text-sm font-medium rounded-l-md">
+                              <CreditCardIcon className="h-6 w-6" />
+                            </div>
+                            <div className="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md truncate">
+                              <div className="flex-1 px-4 py-2 text-sm truncate">
+                                <a className="text-gray-900 font-medium hover:text-gray-600">
+                                  Credit Balance
+                                </a>
+                                <p className="text-black-500">
+                                  {
+                                    props.user.employer_profile.employer_credit
+                                      .employer_credit_balance
+                                  }
+                                </p>
+                              </div>
+                              <div className="flex-shrink-0 pr-2">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    router.push("/reload");
+                                  }}
+                                  className="w-8 h-8 bg-white inline-flex items-center justify-center text-black-400 rounded-full bg-transparent hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                >
+                                  <span className="sr-only">Open options</span>
+                                  <PlusCircleIcon className="h-6 w-6" />
+                                </button>
+                              </div>
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg bg-white overflow-hidden shadow">
+                      <div>test</div>
+                    </div>
+                  )}
                 </section>
               </div>
             </div>

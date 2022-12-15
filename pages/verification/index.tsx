@@ -5,7 +5,7 @@ import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import axios from "axios";
 import { fetcher } from "../../utils/fetcher/fetcher";
 
-function Index() {
+function Index({user}:any) {
   const [companyLogo, setCompanyLogo] = useState<any>();
   const [companyDocument, setCompanyDocument] = useState<any>();
   const company_name = useRef<any>();
@@ -58,7 +58,7 @@ function Index() {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout user = {user}>
       <div className="mt-5 md:mt-0 md:col-span-2">
         <form action="#" method="POST" onSubmit={handleSubmit}>
           <div className="shadow overflow-hidden sm:rounded-md">

@@ -31,56 +31,55 @@ function Index({ user, page }: any) {
 
   const last = Math.ceil(posts_count / 5);
 
-  const employer_profile_id = user.employer_profile.id;
+  const employer_profile_id = user.employer_profile
+    ? user.employer_profile.id
+    : null;
 
   const router = useRouter();
 
   useEffect(() => {
-    const fetch_posts = async () => {
-      try {
-        const fetch_posts = await axios.post(
-          "http://localhost:3000/post/fetch",
-          {
-            employer_profile_id: employer_profile_id,
-            post_visibility: false,
-            post_pending: false,
-            skip_content: start,
-            take_content: 5,
-          },
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-        );
-        set_posts(fetch_posts.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    try {
+      if (employer_profile_id === null) {
+        set_posts([]);
+        set_posts_count(0);
+      } else {
+        const fetch_posts = async () => {
+          const fetch_posts = await axios.post(
+            "http://localhost:3000/post/fetch",
+            {
+              employer_profile_id: employer_profile_id,
+              post_visibility: false,
+              post_pending: false,
+              skip_content: start,
+              take_content: 5,
+            },
+            {
+              headers: { "Content-Type": "application/json" },
+              withCredentials: true,
+            }
+          );
+          set_posts(fetch_posts.data);
+        };
 
-    const fetch_posts_count = async () => {
-      try {
-        const fetch_posts_count = await axios.post(
-          "http://localhost:3000/post/count",
-          {
-            employer_profile_id: employer_profile_id,
-            post_visibility: false,
-            post_pending: false,
-          },
-          {
-            headers: { "Content-Type": "application/json" },
-            withCredentials: true,
-          }
-        );
-        console.log(fetch_posts_count.data);
-        set_posts_count(fetch_posts_count.data);
-      } catch (error) {
-        console.log(error);
+        const fetch_posts_count = async () => {
+          const fetch_posts_count = await axios.post(
+            "http://localhost:3000/post/count",
+            {
+              employer_profile_id: employer_profile_id,
+              post_visibility: false,
+              post_pending: false,
+            },
+            {
+              headers: { "Content-Type": "application/json" },
+              withCredentials: true,
+            }
+          );
+          set_posts_count(fetch_posts_count.data);
+        };
+        fetch_posts();
+        fetch_posts_count();
       }
-    };
-
-    fetch_posts();
-    fetch_posts_count();
+    } catch (error) {}
   }, [employer_profile_id, start]);
 
   function mobileTabs(e: any) {
@@ -94,7 +93,7 @@ function Index({ user, page }: any) {
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout user={user}>
       <div className="bg-white px-4 py-5 border-b border-gray-200 sm:px-6">
         <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
           <div className="ml-4 mt-2">
@@ -166,7 +165,7 @@ function Index({ user, page }: any) {
         </div>
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul role="list" className="divide-y divide-gray-200">
-            {posts ? (
+            {posts && posts_count ? (
               posts.map((post: any, index: any) => (
                 <li key={index}>
                   <a className="block hover:bg-gray-50">
@@ -223,44 +222,50 @@ function Index({ user, page }: any) {
                   </a>
                 </li>
               ))
+            ) : posts && !posts_count ? (
+              <a>Nothing Here</a>
             ) : (
               <Skeleton />
             )}
           </ul>
         </div>
-        <nav
-          className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
-          aria-label="Pagination"
-        >
-          <div className="hidden sm:block">
-            <p className="text-sm text-gray-700">
-              Showing <span className="font-medium">1</span> to{" "}
-              <span className="font-medium">{posts_count < 5 ? posts_count : 5}</span> of{" "}
-              <span className="font-medium">{posts_count}</span> results
-            </p>
-          </div>
+        {posts && posts_count ? (
+          <nav
+            className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+            aria-label="Pagination"
+          >
+            <div className="hidden sm:block">
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">1</span> to{" "}
+                <span className="font-medium">
+                  {posts_count < 5 ? posts_count : 5}
+                </span>{" "}
+                of <span className="font-medium">{posts_count}</span> results
+              </p>
+            </div>
 
-          <div className="flex-1 flex justify-between sm:justify-end">
-            <button
-              type="button"
-              onClick={() => router.push(`post?page=${page - 1}`)}
-              disabled={page <= 1}
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <span className="sr-only">Previous</span>
-              <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push(`post?page=${page + 1}`)}
-              disabled={page >= last}
-              className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <span className="sr-only">Next</span>
-              <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </div>
-        </nav>
+            <div className="flex-1 flex justify-between sm:justify-end">
+              <button
+                type="button"
+                onClick={() => router.push(`post?page=${page - 1}`)}
+                disabled={page <= 1}
+                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <span className="sr-only">Previous</span>
+                <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push(`post?page=${page + 1}`)}
+                disabled={page >= last}
+                className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <span className="sr-only">Next</span>
+                <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </div>
+          </nav>
+        ) : null}
       </div>
     </DashboardLayout>
   );
@@ -282,7 +287,11 @@ export const getServerSideProps: GetServerSideProps = async (
     "http://localhost:3000/user/fetch"
   );
 
-  if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
+  const user_profile:any = user
+
+  if (!user_profile) return { redirect: { statusCode: 307, destination: "/signin" } };
+
+  if(!user_profile.employer_profile)return { redirect: { statusCode: 307, destination: "/verification" } };
 
   return { props: { user: user, page: +page } };
 };
