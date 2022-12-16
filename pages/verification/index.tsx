@@ -4,8 +4,10 @@ import { useRef, useState } from "react";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import axios from "axios";
 import { fetcher } from "../../utils/fetcher/fetcher";
+import { Formik, Field, Form, FieldArray, ErrorMessage } from "formik";
+import * as Yup from "yup";
 
-function Index({user}:any) {
+function Index({ user }: any) {
   const [companyLogo, setCompanyLogo] = useState<any>();
   const [companyDocument, setCompanyDocument] = useState<any>();
   const company_name = useRef<any>();
@@ -58,8 +60,71 @@ function Index({user}:any) {
   };
 
   return (
-    <DashboardLayout user = {user}>
-      <div className="mt-5 md:mt-0 md:col-span-2">
+    <DashboardLayout user={user}>
+      <Formik
+        initialValues={{
+          employer_picture: [],
+          employer_picture_blob:null
+        }}
+        onSubmit={(values) => {
+        }}
+        validationSchema={Yup.object({
+          employer_picture:Yup.array().min(1,"select at least 1 file")
+        })}
+      >
+        {(props) => (
+          <Form>
+            <div className="mt-5 md:mt-0 md:col-span-2">
+              <div className="shadow overflow-hidden sm:rounded-md">
+                <div className="px-4 py-5 bg-white sm:p-6">
+                  <div className="grid grid-cols-6 gap-6">
+                    <div className="col-span-6 text-center">
+                      <div className="mb-6">
+                         <picture>
+                          <img
+                            className="p-1 w-20 h-20 rounded-full ring-2 ring-gray-300 dark:ring-gray-500 mx-auto object-center"
+                            src={props.values.employer_picture_blob ? props.values.employer_picture_blob :
+                              "https://via.placeholder.com/150"
+                            }
+                            alt="Bordered avatar"
+                          />
+                        </picture>
+                      </div>
+                      <label className="cursor-pointer mt-6">
+                        <span className="mx-auto bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                          Upload Logo
+                        </span>
+                        <input
+                          id="file"
+                          name="employer_picture"
+                          type="file"
+                          accept="image/png, image/gif, image/jpeg"
+                          className="hidden"
+                          onChange={(event: any) => {
+                            const file_list = event.target.files;
+                            let file_array:any = Array.from(file_list);
+                            const employer_picture_blob = new Blob(file_array, {type: 'image/jpeg'});
+                            const employer_picture_blob_url = URL.createObjectURL(employer_picture_blob);
+                            props.setFieldValue("employer_picture", file_array)
+                            props.setFieldValue("employer_picture_blob", employer_picture_blob_url)
+
+                          }}
+                        />
+                        <ErrorMessage name="employer_picture"/>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="submit">
+                Submit
+            </button>
+          </Form>
+        )}
+      </Formik>
+
+      {/* <div className="mt-5 md:mt-0 md:col-span-2">
         <form action="#" method="POST" onSubmit={handleSubmit}>
           <div className="shadow overflow-hidden sm:rounded-md">
             <div className="px-4 py-5 bg-white sm:p-6">
@@ -309,7 +374,7 @@ function Index({user}:any) {
             </div>
           </div>
         </form>
-      </div>
+      </div> */}
     </DashboardLayout>
   );
 }

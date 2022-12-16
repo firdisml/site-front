@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from "react";
 import DashboardLayout from "../../layout/layout.dashboard";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { fetcher } from "../../utils/fetcher/fetcher";
@@ -11,86 +10,74 @@ import {
 import axios from "axios";
 import Skeleton from "./component/skeleton";
 import { useRouter } from "next/router";
+import { useQuery } from "react-query";
+
+const tabs = [
+  { name: "Active", href: "/post", current: true },
+  { name: "Pending", href: "/post/pending", current: false },
+  { name: "Inactive", href: "/post/inactive", current: false },
+];
+
+function classNames(...classes: any) {
+  return classes.filter(Boolean).join(" ");
+}
+
+const fetch_employer_posts = async (
+  employer_profile_id: string,
+  start: number
+) => {
+  const fetch_posts = await axios.post(
+    "http://localhost:3000/post/fetch",
+    {
+      employer_profile_id: employer_profile_id,
+      post_visibility: false,
+      post_pending: false,
+      skip_content: start,
+      take_content: 5,
+    },
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+
+  return fetch_posts.data;
+};
+
+const fetch_employer_posts_count = async (employer_profile_id: string) => {
+  const fetch_posts_count = await axios.post(
+    "http://localhost:3000/post/count",
+    {
+      employer_profile_id: employer_profile_id,
+      post_visibility: false,
+      post_pending: false,
+    },
+    {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    }
+  );
+  return fetch_posts_count.data;
+};
 
 function Index({ user, page }: any) {
-  const tabs = [
-    { name: "Active", href: "/post", current: true },
-    { name: "Pending", href: "/post/pending", current: false },
-    { name: "Inactive", href: "/post/inactive", current: false },
-  ];
-
-  function classNames(...classes: any) {
-    return classes.filter(Boolean).join(" ");
-  }
-
-  const [posts, set_posts] = useState<any>();
-
-  const [posts_count, set_posts_count] = useState<any>();
+  const router = useRouter();
 
   const start = page === 1 ? 0 : (page - 1) * 5;
-
-  const last = Math.ceil(posts_count / 5);
 
   const employer_profile_id = user.employer_profile
     ? user.employer_profile.id
     : null;
 
-  const router = useRouter();
+  const posts = useQuery(["posts", employer_profile_id, start], () =>
+    fetch_employer_posts(employer_profile_id, start)
+  );
 
-  useEffect(() => {
-    try {
-      if (employer_profile_id === null) {
-        set_posts([]);
-        set_posts_count(0);
-      } else {
-        const fetch_posts = async () => {
-          const fetch_posts = await axios.post(
-            "http://localhost:3000/post/fetch",
-            {
-              employer_profile_id: employer_profile_id,
-              post_visibility: false,
-              post_pending: false,
-              skip_content: start,
-              take_content: 5,
-            },
-            {
-              headers: { "Content-Type": "application/json" },
-              withCredentials: true,
-            }
-          );
-          set_posts(fetch_posts.data);
-        };
+  const posts_count = useQuery(["posts_count", employer_profile_id], () =>
+    fetch_employer_posts_count(employer_profile_id)
+  );
 
-        const fetch_posts_count = async () => {
-          const fetch_posts_count = await axios.post(
-            "http://localhost:3000/post/count",
-            {
-              employer_profile_id: employer_profile_id,
-              post_visibility: false,
-              post_pending: false,
-            },
-            {
-              headers: { "Content-Type": "application/json" },
-              withCredentials: true,
-            }
-          );
-          set_posts_count(fetch_posts_count.data);
-        };
-        fetch_posts();
-        fetch_posts_count();
-      }
-    } catch (error) {}
-  }, [employer_profile_id, start]);
-
-  function mobileTabs(e: any) {
-    e.preventDefault();
-
-    if (e.currentTarget.value === "Active") {
-      router.push("/post");
-    } else {
-      router.push(`/post/${e.currentTarget.value.toLowerCase()}`);
-    }
-  }
+  const last = Math.ceil(posts_count.data / 5);
 
   return (
     <DashboardLayout user={user}>
@@ -124,13 +111,15 @@ function Index({ user, page }: any) {
             id="tabs"
             name="tabs"
             onChange={(e) => {
-              mobileTabs(e);
+              router.push(e.currentTarget.value);
             }}
             className="block w-full focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 "
             defaultValue={tabs.find((tab) => tab.current).name}
           >
             {tabs.map((tab) => (
-              <option key={tab.name}>{tab.name}</option>
+              <option key={tab.name} value={tab.href}>
+                {tab.name}
+              </option>
             ))}
           </select>
         </div>
@@ -165,8 +154,8 @@ function Index({ user, page }: any) {
         </div>
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul role="list" className="divide-y divide-gray-200">
-            {posts && posts_count ? (
-              posts.map((post: any, index: any) => (
+            {posts.data && posts_count.data ? (
+              posts.data.map((post: any, index: any) => (
                 <li key={index}>
                   <a className="block hover:bg-gray-50">
                     <div className="flex items-center px-4 py-4 sm:px-6">
@@ -238,9 +227,10 @@ function Index({ user, page }: any) {
               <p className="text-sm text-gray-700">
                 Showing <span className="font-medium">1</span> to{" "}
                 <span className="font-medium">
-                  {posts_count < 5 ? posts_count : 5}
+                  {posts_count.data < 5 ? posts_count.data : 5}
                 </span>{" "}
-                of <span className="font-medium">{posts_count}</span> results
+                of <span className="font-medium">{posts_count.data}</span>{" "}
+                results
               </p>
             </div>
 
@@ -287,11 +277,13 @@ export const getServerSideProps: GetServerSideProps = async (
     "http://localhost:3000/user/fetch"
   );
 
-  const user_profile:any = user
+  const user_profile: any = user;
 
-  if (!user_profile) return { redirect: { statusCode: 307, destination: "/signin" } };
+  if (!user_profile)
+    return { redirect: { statusCode: 307, destination: "/signin" } };
 
-  if(!user_profile.employer_profile)return { redirect: { statusCode: 307, destination: "/verification" } };
+  if (!user_profile.employer_profile)
+    return { redirect: { statusCode: 307, destination: "/verification" } };
 
   return { props: { user: user, page: +page } };
 };

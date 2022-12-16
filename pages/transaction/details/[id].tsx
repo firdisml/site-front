@@ -6,27 +6,31 @@ import axios from "axios";
 import { GetServerSidePropsContext, GetServerSideProps } from "next";
 import { fetcher } from "../../../utils/fetcher/fetcher";
 import Skeleton from "../component/skeleton";
+import { useQuery } from "react-query";
+
+const fetch_unique_employer_transaction = async (param:any) => {
+  const fetch_unique_transaction = await axios.get(
+    `http://localhost:3000/transaction/employer/transaction/${param}`,
+    { withCredentials: true }
+  );
+  return fetch_unique_transaction.data;
+};
 
 function DynamicTransaction({user}:any) {
-    const [transaction, setTransaction] = useState<any>()
+
   const router = useRouter();
   const param = router.query.id;
 
-  useEffect(() => {
-    const fetch_unique_employer_transaction = async () => {
-      const transaction = await axios.get(
-        `http://localhost:3000/transaction/employer/transaction/${param}`,
-        { withCredentials: true }
-      );
-      setTransaction(transaction.data);
-    };
+  const transaction = useQuery(
+    ["transaction", param],
+    () => fetch_unique_employer_transaction(param)
+  );
 
-    fetch_unique_employer_transaction();
-  }, [param]);
+
   return (
     <DashboardLayout user = {user}>
       <>
-       {transaction ? (<>
+       {transaction.data ? (<>
         <div className="bg-white shadow overflow-hidden sm:rounded-lg">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -38,7 +42,7 @@ function DynamicTransaction({user}:any) {
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">Name</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {transaction.product_name}
+                  {transaction.data.product_name}
                 </dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -46,7 +50,7 @@ function DynamicTransaction({user}:any) {
                     Status
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {transaction.transaction_status ? "Successful" : "Unsuccessful"}
+                  {transaction.data.transaction_status ? "Successful" : "Unsuccessful"}
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -54,7 +58,7 @@ function DynamicTransaction({user}:any) {
                   Value
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {transaction.product_credit_value} Credit
+                {transaction.data.product_credit_value} Credit
                 </dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -62,7 +66,7 @@ function DynamicTransaction({user}:any) {
                   Price
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                RM {parseFloat(transaction.product_price).toFixed(2)}
+                RM {parseFloat(transaction.data.product_price).toFixed(2)}
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -70,7 +74,7 @@ function DynamicTransaction({user}:any) {
                   Date
                 </dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                {transaction.created_at}
+                {transaction.data.created_at}
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
