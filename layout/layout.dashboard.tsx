@@ -12,6 +12,33 @@ import { SearchIcon } from "@heroicons/react/solid";
 import { useRouter } from "next/router";
 import camelCase from "camelcase";
 
+import {
+  CalendarIcon,
+  LocationMarkerIcon,
+  UsersIcon,
+} from "@heroicons/react/solid";
+
+const positions = [
+  {
+    id: 1,
+    title: "Back End Developer",
+    type: "Full-time",
+    location: "Remote",
+    department: "Engineering",
+    closeDate: "2020-01-07",
+    closeDateFull: "January 7, 2020",
+  },
+  {
+    id: 2,
+    title: "Front End Developer",
+    type: "Full-time",
+    location: "Remote",
+    department: "Engineering",
+    closeDate: "2020-01-07",
+    closeDateFull: "January 7, 2020",
+  },
+];
+
 const user = {
   name: "Tom Cook",
   email: "tom@example.com",
@@ -19,10 +46,10 @@ const user = {
     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
 };
 const navigation = [
-  { name: "Home", href: "#", current: true },
+  { name: "Home", href: "#", current: false },
   { name: "Posting", href: "/post", current: false },
   { name: "Reload", href: "/reload", current: false },
-  { name: "Verification", href: "/verification", current: false },
+  { name: "Verification", href: "/verification", current: true },
   { name: "Transaction", href: "/transaction", current: false },
 ];
 const userNavigation = [
@@ -39,6 +66,8 @@ function DashboardLayout({ ...props }) {
   const employer_profile_id = props.user.employer_profile
     ? props.user.employer_profile.id
     : null;
+
+  const verification_status = props.user.verification_status;
 
   const router = useRouter();
 
@@ -158,7 +187,8 @@ function DashboardLayout({ ...props }) {
                   <div className="grid grid-cols-3 gap-8 items-center">
                     <div className="col-span-2">
                       <nav className="flex space-x-4">
-                        {navigation && employer_profile_id ? (
+                        {navigation &&
+                        employer_profile_id && props.user.verification_submission && props.user.verification_status ? (
                           navigation.map((item) => (
                             <a
                               key={item.name}
@@ -364,7 +394,7 @@ function DashboardLayout({ ...props }) {
 
               <div className="grid grid-cols-1 gap-4">
                 <section aria-labelledby="section-2-title">
-                  {employer_profile ? (
+                  {employer_profile && props.user.verification_submission && props.user.verification_status ? (
                     <div className="rounded-lg bg-white overflow-hidden shadow">
                       <div className="">
                         <div className=" h-32 overflow-hidden">
@@ -469,7 +499,56 @@ function DashboardLayout({ ...props }) {
                     </div>
                   ) : (
                     <div className="rounded-lg bg-white overflow-hidden shadow">
-                      <div>test</div>
+                      <div>
+                        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+                          <ul role="list" className="divide-y divide-gray-200">
+                          <li>
+                                <a href="#" className="block hover:bg-gray-50">
+                                  <div className="px-4 py-4 sm:px-6">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-sm font-medium text-indigo-600 truncate">
+                                        Verification Submission
+                                      </p>
+                                      <div className="ml-2 flex-shrink-0 flex">
+                                       
+                                          {props.user.verification_submission ? (<p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Submitted</p>) : (<p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Not Submitted</p>)}
+
+                                      </div>
+                                    </div>
+                                    <div className="sm:flex sm:justify-between">
+                                      <div className="mt-4 sm:flex">
+                                      <p className="mb-3 font-light text-gray-500 dark:text-gray-400">Track work across the enterprise through an open, collaborative platform. Link issues across Jira and ingest data from other software development tools, so your IT support and operations teams have richer contextual information to rapidly respond to requests, incidents, and changes.</p>
+                                      </div>
+                                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0"></div>
+                                    </div>
+                                  </div>
+                                </a>
+                              </li>
+                              <li>
+                                <a href="#" className="block hover:bg-gray-50">
+                                  <div className="px-4 py-4 sm:px-6">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-sm font-medium text-indigo-600 truncate">
+                                        Verification Status
+                                      </p>
+                                      <div className="ml-2 flex-shrink-0 flex">
+                                      
+                                        {props.user.verification_status? (<p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Verified</p>) : (<p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Not Verified</p>)}
+
+                                      </div>
+                                    </div>
+                                    <div className="sm:flex sm:justify-between">
+                                      <div className="mt-4 sm:flex">
+                                      <p className="mb-3 font-light text-gray-500 dark:text-gray-400">Track work across the enterprise through an open, collaborative platform. Link issues across Jira and ingest data from other software development tools, so your IT support and operations teams have richer contextual information to rapidly respond to requests, incidents, and changes.</p>
+                                      </div>
+                                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0"></div>
+                                    </div>
+                                  </div>
+                                </a>
+                              </li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </section>

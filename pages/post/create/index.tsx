@@ -611,9 +611,9 @@ function Index({user}:any) {
               <div>
                 <button
                   type="submit"
-                  className="cursor-pointer block bg-gray-50 text-sm font-medium text-gray-500 text-center px-4 py-4 hover:text-gray-700 sm:rounded-b-lg"
+                  className="cursor-pointer w-full block bg-gray-50 text-sm font-medium text-gray-500 text-center px-4 py-4 hover:text-gray-700 sm:rounded-b-lg"
                 >
-                  Submit
+                  Preview
                 </button>
               </div>
             </Form>
