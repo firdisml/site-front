@@ -271,19 +271,20 @@ export const getServerSideProps: GetServerSideProps = async (
     res,
     query: { page = 1 },
   } = ctx;
-  const [error, user] = await fetcher(
+  const [error, user]: any = await fetcher(
     req,
     res,
     "http://localhost:3000/user/fetch"
   );
 
-  const user_profile: any = user;
+  res.setHeader(
+    "Cache-Control",
+    "public, s-maxage=10, stale-while-revalidate=59"
+  );
 
-  if (!user_profile)
-    return { redirect: { statusCode: 307, destination: "/signin" } };
+  if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
 
-  if (!user_profile.employer_profile)
-    return { redirect: { statusCode: 307, destination: "/verification" } };
+  if (!user.verification_status) return { redirect: { statusCode: 307, destination: "/verification" } };
 
   return { props: { user: user, page: +page } };
 };

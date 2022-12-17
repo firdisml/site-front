@@ -52,7 +52,7 @@ export const fetcher = async <T>(
   try {
     const request = () => axios.get(url, { headers: { cookie: req.headers.cookie } });
     const { data } = await handleRequest(req, res, request);
-    return [null, data];
+    return [null, data] as any;
   } catch (error: any) {
     return [error, null];
   }

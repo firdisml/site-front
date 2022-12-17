@@ -46,7 +46,7 @@ export const getServerSideProps: GetServerSideProps = async (
   ctx: GetServerSidePropsContext
 ) => {
   const { req, res } = ctx;
-  const [error, user] = await fetcher(
+  const [error, user]:any = await fetcher(
     req,
     res,
     "http://localhost:3000/user/fetch"
@@ -59,7 +59,8 @@ export const getServerSideProps: GetServerSideProps = async (
 
   if (!user) return { redirect: { statusCode: 307, destination: "/signin" } };
 
-  console.log(user);
+  if(!user.verification_submission) return { redirect: { statusCode: 307, destination: "/verification/submit" } };
 
   return { props: { user } };
+
 };

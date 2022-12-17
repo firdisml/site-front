@@ -29,7 +29,7 @@ function Index({ user }: any) {
           company_website: "",
           company_size: "",
           company_industry: "",
-          company_registration_number: "",
+          company_register_number: "",
           company_type: "",
           company_address: "",
           employer_postal: "",
@@ -45,11 +45,12 @@ function Index({ user }: any) {
               "http://localhost:3000/verification/employer/submission",
               {
                 employer_picture: values.employer_picture[0],
+                employer_banner_picture:values.employer_banner_picture[0],
                 employer_document: values.employer_document[0],
                 employer_name: values.company_name,
                 employer_size: values.company_size,
                 employer_industry: values.company_industry,
-                employer_register_number: values.company_registration_number,
+                employer_register_number: values.company_register_number,
                 employer_type: values.company_type,
                 employer_website: values.company_website,
                 employer_address: values.company_address,
@@ -272,17 +273,17 @@ function Index({ user }: any) {
 
                     <div className="col-span-6 sm:col-span-3">
                       <label
-                        htmlFor="company_registration_number"
+                        htmlFor="company_register_number"
                         className="block text-sm font-medium text-gray-700"
                       >
                         Company Registration Number
                       </label>
                       <input
                         type="text"
-                        name="company_registration_number"
-                        id="company_registration_number"
-                        autoComplete="company_registration_number"
-                        value={props.values.company_registration_number}
+                        name="company_register_number"
+                        id="company_register_number"
+                        autoComplete="company_register_number"
+                        value={props.values.company_register_number}
                         onChange={props.handleChange}
                         className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                       />
@@ -516,7 +517,7 @@ export const getServerSideProps: GetServerSideProps = async (
   ctx: GetServerSidePropsContext
 ) => {
   const { req, res } = ctx;
-  const [error, user] = await fetcher(
+  const [error, user]:any = await fetcher(
     req,
     res,
     "http://localhost:3000/user/fetch"
@@ -527,13 +528,9 @@ export const getServerSideProps: GetServerSideProps = async (
     "public, s-maxage=10, stale-while-revalidate=59"
   );
 
-  const user_profile: any = user
+  if(!user) return { redirect: { statusCode: 307, destination: "/signin" } };
 
-  if (!user_profile) return { redirect: { statusCode: 307, destination: "/signin" } };
-
-  const verification_submission = user_profile.verification_submission
-  
-  if(verification_submission) return { redirect: { statusCode: 307, destination: "/verification/submission" } };
+  if(user.verification_submission) return { redirect: { statusCode: 307, destination: "/verification" } };
 
   return { props: { user } };
 };
